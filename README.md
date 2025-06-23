@@ -1,74 +1,47 @@
 # git-recent
 
-A simple Fish shell script to show and interactively switch between recently used Git branches.
+Quickly switch between your recently used Git branches with an interactive menu.
+
+## Quick Start
+
+```bash
+# Download and install
+curl -O https://raw.githubusercontent.com/storbeck/git-recent/main/git-recent
+chmod +x git-recent && mv git-recent /usr/local/bin/
+
+# Set up git alias (optional but recommended)
+git config --global alias.recent "!git-recent"
+
+# Use it
+git recent
+```
 
 ## What it does
 
-`git-recent` shows you a numbered list of your most recently checked-out Git branches and lets you quickly switch to any of them by entering the corresponding number.
-
-## Features
-
-- Shows up to 10 recent branches by default (configurable)
-- Highlights your current branch with an asterisk (*)
-- Interactive branch switching with number selection
-- Filters out duplicate branches and HEAD references
-- Simple, fast, and lightweight
-
-## Requirements
-
-- [Fish shell](https://fishshell.com/)
-- Git
-
-## Installation
-
-1. Download the `git-recent` script
-2. Make it executable: `chmod +x git-recent`
-3. Move it to a directory in your PATH, such as:
-   ```bash
-   mv git-recent /usr/local/bin/
-   ```
-   Or add it to your Fish functions directory:
-   ```bash
-   cp git-recent ~/.config/fish/functions/
-   ```
-
-## Usage
-
-Show the 10 most recent branches:
-```bash
-git-recent
-```
-
-Show a custom number of recent branches:
-```bash
-git-recent 5    # Show 5 recent branches
-git-recent 20   # Show 20 recent branches
-```
-
-### Example output
+Shows a numbered list of your recently checked-out branches and lets you switch to any of them by entering the number.
 
 ```
 Recently used branches:
 ----------------------
 1) feature/user-auth
-2) develop
+2) develop  
 3) main *
 4) hotfix/critical-bug
-5) feature/new-dashboard
 
 Enter number to switch to that branch (or press Enter to cancel):
 ```
 
-Type a number (e.g., `1`) and press Enter to switch to that branch, or just press Enter to cancel.
+**Requirements:** Fish shell and Git
 
-## How it works
+## Usage
 
-The script uses `git reflog` to find recent branch checkouts, parses the output to extract unique branch names, and presents them in a numbered list. When you select a number, it runs `git checkout` to switch to that branch.
+```bash
+git recent     # Show 10 recent branches
+git recent 5   # Show 5 recent branches
+```
+
+Type a number and press Enter to switch, or just press Enter to cancel.
 
 ## License
 
-MIT License - feel free to use, modify, and distribute as you see fit.
-
-## Contributing
-
-Issues and pull requests welcome! This is a simple utility script, but improvements and bug fixes are always appreciated.
+MIT - Issues and PRs welcome!
