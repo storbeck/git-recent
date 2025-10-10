@@ -41,7 +41,3 @@ git recent 5   # Show 5 recent branches
 ```
 
 Type a number and press Enter to switch, or just press Enter to cancel.
-
-## License
-
-MIT - Issues and PRs welcome!
