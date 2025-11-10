@@ -1,73 +1,77 @@
-#!/usr/bin/env fish
+#!/usr/bin/env zsh
 
-# Git-recent: A script to show and switch between recently used git branches
-# Number of recent branches to show (default: 10)
-set count $argv[1]
-if test -z "$count"
-    set count 10
-end
+# Git-recent: Show and switch between recently used git branches (zsh version)
+count="$1"
+if [[ -z "$count" ]]; then
+    count=10
+fi
 
-# Get the current branch
-set current_branch (git symbolic-ref --short HEAD 2>/dev/null)
+if ! [[ "$count" =~ '^[0-9]+$' ]] || (( count <= 0 )); then
+    echo "Invalid count '$count'. Using default of 10."
+    count=10
+fi
 
-# Get a list of recently checked-out branches
-set recent_branches (git reflog --no-abbrev | \
-                    grep -i 'checkout: moving from' | \
-                    awk '{print $6, $8}' | \
-                    grep -v '^$')
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Error: not inside a git repository." >&2
+    exit 1
+fi
 
-# Display the branches with numbers
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+branches=()
+
+while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    from_branch=${line%% *}
+    [[ -z "$from_branch" || "$from_branch" == HEAD ]] && continue
+
+    if (( ${branches[(Ie)$from_branch]} == 0 )); then
+        branches+=("$from_branch")
+    fi
+
+    if (( ${#branches} >= count )); then
+        break
+    fi
+
+done < <(git reflog --no-abbrev 2>/dev/null | \
+         grep -i 'checkout: moving from' | \
+         awk '{print $6, $8}' | \
+         grep -v '^$')
+
 echo "Recently used branches:"
 echo "----------------------"
 
-# Create an array to store branch names
-set -l branches
-
-# Process the reflog output
-for line in $recent_branches
-    # Extract the branch name (it's in pairs, so we need every other entry)
-    set -l parts (string split " " $line)
-    set -l from_branch $parts[1]
-    
-    # Skip if branch is empty or HEAD
-    if test -n "$from_branch" -a "$from_branch" != "HEAD"
-        # Check if branch is already in our list
-        if not contains $from_branch $branches
-            set -a branches $from_branch
-        end
-    end
-
-    if test (count $branches) -ge $count
-        break
-    end
-end
-
-# Print the unique branches with numbers
-set i 1
-for branch in $branches
-    # Mark the current branch with an asterisk
-    if test "$branch" = "$current_branch"
-        echo "$i) $branch *"
-    else
-        echo "$i) $branch"
-    end
-    set i (math $i + 1)
-end
-
-# Ask to switch if we found branches
-if test (count $branches) -gt 0
-    echo ""
-    echo "Enter number to switch to that branch (or press Enter to cancel):"
-    read -l choice
-    
-    # Switch to the selected branch if a valid number was entered
-    if string match -rq '^[0-9]+$' "$choice"
-        if test $choice -ge 1 -a $choice -le (count $branches)
-            set selected_branch $branches[(math $choice)]
-            echo "Switching to branch: $selected_branch"
-            git checkout "$selected_branch"
-        end
-    end
-else
+if (( ${#branches} == 0 )); then
     echo "No recent branches found."
-end
+    exit 0
+fi
+
+i=1
+for branch in "${branches[@]}"; do
+    if [[ "$branch" == "$current_branch" ]]; then
+        printf "%d) %s *\n" "$i" "$branch"
+    else
+        printf "%d) %s\n" "$i" "$branch"
+    fi
+    (( i++ ))
+done
+
+echo ""
+printf "Enter number to switch to that branch (or press Enter to cancel): "
+IFS= read -r choice
+
+if [[ -z "$choice" ]]; then
+    exit 0
+fi
+
+if [[ "$choice" =~ '^[0-9]+$' ]]; then
+    choice_index=$(( choice ))
+    if (( choice_index >= 1 && choice_index <= ${#branches} )); then
+        selected_branch=${branches[choice_index]}
+        echo "Switching to branch: $selected_branch"
+        git checkout "$selected_branch"
+    else
+        echo "Invalid selection."
+    fi
+else
+    echo "Invalid input."
+fi

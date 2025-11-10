@@ -5,7 +5,7 @@ Quickly switch between your recently used Git branches with an interactive menu.
 ## Quick Start
 
 ```bash
-# Download and install
+# Download and install (zsh default)
 curl -O https://raw.githubusercontent.com/storbeck/git-recent/main/git-recent
 chmod +x git-recent && mv git-recent /usr/local/bin/
 
@@ -31,7 +31,7 @@ Recently used branches:
 Enter number to switch to that branch (or press Enter to cancel):
 ```
 
-**Requirements:** Fish shell and Git
+**Requirements:** Git and zsh (default macOS shell)
 
 ## Usage
 
@@ -41,3 +41,15 @@ git recent 5   # Show 5 recent branches
 ```
 
 Type a number and press Enter to switch, or just press Enter to cancel.
+
+## Using fish shell
+
+The original fish implementation ships as `git-recent.fish`. If you prefer to use that version:
+
+```bash
+curl -O https://raw.githubusercontent.com/storbeck/git-recent/main/git-recent.fish
+chmod +x git-recent.fish && mv git-recent.fish /usr/local/bin/git-recent.fish
+funcsave git-recent.fish  # optional: make it available as a fish function
+```
+
+Then update your fish config or alias to call `/usr/local/bin/git-recent.fish` (or source it as a function) when running `git recent`.
